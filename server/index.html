@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Live Transcription with Twilio Media Streams</title>
+</head>
+
+<body>
+    <h1>Live Transcription with Twilio Media Streams</h1>
+    <h3>
+        Call your Twilio Number, start talking and watch your words magically
+        appear.
+    </h3>
+    <div id="transcription">
+        <p id="transcription-container"></p>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", event => {
+            let webSocket = new WebSocket("ws://localhost:8000");
+            console.log("i am in html file");
+
+            // Define the onmessage event listener using addEventListener
+            webSocket.addEventListener('message', function (event) {
+                // Handle the received message
+                console.log('Received message: ' + event);
+            });
+
+            webSocket.onopen = function () {
+                console.log("WebSocket connection established");
+            };
+
+            webSocket.onmessage = function (msg) {
+                console.log("msg .>>", msg);
+                try {
+                    const data = JSON.parse(msg.data);
+                    console.log("data ....>>", data.text);
+                    if (data.event === "interim-transcription") {
+                        document.getElementById("transcription-container").innerHTML =
+                            data.text;
+                    }
+                } catch (e) {
+                    console.error("Error parsing JSON:", e);
+                }
+            };
+
+            webSocket.onerror = function (event) {
+                console.error("WebSocket error:", event);
+            };
+
+            webSocket.onclose = function () {
+                console.log("WebSocket connection closed");
+            };
+        });
+    </script>
+</body>
+
+</html>
